@@ -1,0 +1,268 @@
+/* Setting things up. */
+
+var path = require('path'),
+    express = require('express'),
+    app = express(),   
+    Twit = require('twit'),
+    config = {
+    /* Be sure to update the .env file with your API keys. See how to get them: https://botwiki.org/tutorials/how-to-create-a-twitter-app */      
+      twitter: {
+        consumer_key: process.env.CONSUMER_KEY,
+        consumer_secret: process.env.CONSUMER_SECRET,
+        access_token: process.env.ACCESS_TOKEN,
+        access_token_secret: process.env.ACCESS_TOKEN_SECRET
+      }
+    },
+    Twitter = new Twit(config.twitter);
+
+
+app.use(express.static('public'));
+
+/* You can use cron-job.org, uptimerobot.com, or a similar site to hit your /BOT_ENDPOINT to wake up your app and make your Twitter bot tweet. */
+
+app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
+  
+
+  //////////////////////////
+  
+  //BARCELONA
+  
+  
+    var barcelonaRecursive = function () {
+    
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaBarcelonaPerduts OR #XarxaBarcelonaTrobats OR #XarxaBarcelonaAdopcions OR #XarxaBarcelonaDonacions OR #XarxaBarcelonaALERTA -from:AnimalistesCAT', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        
+        i++;
+        n++;
+        
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
+      if(next_cursor != 0) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  //LLEIDA
+  
+    var lleidaRecursive = function () {
+    
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaLleidaPerduts OR #XarxaLleidaTrobats OR #XarxaLleidaAdopcions OR #XarxaLleidaDonacions OR #XarxaLleidaALERTA -from:AnimalistesCAT', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        
+        i++;
+        n++;
+        
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
+      if(next_cursor != 0) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  
+  //TARRAGONA
+  
+    var tarragonaRecursive = function () {
+    
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaTarragonaPerduts OR #XarxaTarragonaTrobats OR #XarxaTarragonaAdopcions OR #XarxaTarragonaDonacions OR #XarxaTarragonaALERTA -from:AnimalistesCAT', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        
+        i++;
+        n++;
+        
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
+      if(next_cursor != 0) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  //GIRONA
+  
+    var gironaRecursive = function () {
+    
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaGironaPerduts OR #XarxaGironaTrobats OR #XarxaGironaAdopcions OR #XarxaGironaDonacions OR #XarxaGironaALERTA -from:AnimalistesCAT', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        
+        i++;
+        n++;
+        
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
+      if(next_cursor != 0) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  //CATALUNYA
+  
+    var catalunyaRecursive = function () {
+    
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaAnimalistaCat OR #XarxaDesplaçatsCat -from:AnimalistesCAT', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        
+        i++;
+        n++;
+        
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
+      if(next_cursor != 0) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  ///////////////////
+  //FUNCTION CALLS// 
+  /////////////////
+  
+  //barcelonaRecursive(); 
+  //lleidaRecursive();
+  //tarragonaRecursive(); 
+  //gironaRecursive();
+  catalunyaRecursive();
+});
+
+var listener = app.listen(process.env.PORT, function () {
+  console.log('Your bot is running on port ' + listener.address().port);
+});

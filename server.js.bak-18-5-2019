@@ -1,0 +1,205 @@
+/* Setting things up. */
+var path = require('path'),
+    express = require('express'),
+    app = express(),   
+    Twit = require('twit'),
+    config = {
+    /* Be sure to update the .env file with your API keys. See how to get them: https://botwiki.org/tutorials/how-to-create-a-twitter-app */      
+      twitter: {
+        consumer_key: process.env.CONSUMER_KEY,
+        consumer_secret: process.env.CONSUMER_SECRET,
+        access_token: process.env.ACCESS_TOKEN,
+        access_token_secret: process.env.ACCESS_TOKEN_SECRET
+      }
+    },
+    Twitter = new Twit(config.twitter);
+
+
+app.use(express.static('public'));
+
+/* You can use cron-job.org, uptimerobot.com, or a similar site to hit your /BOT_ENDPOINT to wake up your app and make your Twitter bot tweet. */
+
+app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
+  
+  
+    /*var Tweets_Nil_Cat1 = function () {
+    
+    var params = {
+        q: 'XarxaTarragonaPerduts from:Nil_cat1', // Search Query
+        result_type: 'mixed',
+        count: '100',
+    }
+    Twitter.get('search/tweets', params, function (err, data) {
+        var n = 0;
+        while (n < data.statuses.length){
+          
+          if (!err) { console.log("@NIL_CAT1 SEARCH RESULT #"+n+" --> "+data.statuses[n].id_str);  }
+          else { console.log('Error during tweet search call'); }
+          n++;      
+          
+        }
+        console.log("@NIL_CAT1 TOTAL TWEETS FOUND --> "+n);
+    });
+  };*/
+  
+  //////////////
+  //CATALUNYA//
+  ////////////
+  
+  // #XarxaAnimalistaCat + #XarxaDesplaçatsCat
+  
+   /*var catalunya = function () {
+    
+    var params = {
+        q: '#XarxaAnimalistaCat OR #XarxaDesplaçatsCat', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        cursor:'-1',
+        stringify_ids: true
+    }
+    Twitter.get('search/tweets', params, function (err, data) {
+      var n = 0;
+      while (n < data.statuses.length){
+        
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          
+          console.log(params.q + " :: SEARCH RESULT #" + n + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        }       
+        n++;
+      }
+      console.log("TOTAL TWEETS --> "+n);
+    });
+  };
+  
+  */
+  
+  
+  
+    var barcelonaRecursive = function () {
+      
+    var maxDate;
+    var tweetDate;
+    var next_cursor = -1;  
+    var i = 0;
+    var params = {
+        q: '#XarxaBarcelonaPerduts OR #XarxaBarcelonaTrobats OR #XarxaBarcelonaAdopcions OR #XarxaBarcelonaDonacions OR #XarxaBarcelonaALERTA', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        max_id:'9999999999999999999',
+        
+    }
+    Twitter.get('search/tweets', params, function getList(err, data) {
+             
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          var n = 0;
+          while (n < data.statuses.length){
+          console.log(params.q + " :: SEARCH RESULT #" + i + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          next_cursor = data.statuses[n].id_str;
+          tweetDate = data.statuses[n].created_at;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        i++;
+        n++;
+        }
+      }
+      console.log("TOTAL TWEETS IN CURRENT PAGE: --> "+n);
+      console.log("LAST CURSOR:" + retweetId +" :: "+ tweetDate);
+      if(maxDate < tweetDate == true) // ADD CONDITION TO EXIT RECURSIVE BY DATE (7 days)
+      {
+        params.max_id = next_cursor;
+        console.log("NEXT CURSOR --> "+params.max_id);
+        Twitter.get('search/tweets',params, getList);
+      }
+    });
+  };
+  
+  
+  
+  ///////////////////
+  //FUNCTION CALLS// 
+  /////////////////
+  
+  //Tweets_Nil_Cat1();
+  barcelonaRecursive(); 
+});
+
+var listener = app.listen(process.env.PORT, function () {
+  console.log('Your bot is running on port ' + listener.address().port);
+}); 
+
+    /*var Tweets_Nil_Cat1 = function () {
+    
+    var params = {
+        q: 'XarxaTarragonaPerduts from:Nil_cat1', // Search Query
+        result_type: 'mixed',
+        count: '100',
+    }
+    Twitter.get('search/tweets', params, function (err, data) {
+        var n = 0;
+        while (n < data.statuses.length){
+          
+          if (!err) { console.log("@NIL_CAT1 SEARCH RESULT #"+n+" --> "+data.statuses[n].id_str);  }
+          else { console.log('Error during tweet search call'); }
+          n++;      
+          
+        }
+        console.log("@NIL_CAT1 TOTAL TWEETS FOUND --> "+n);
+    });
+  };*/
+  
+  /// VERSION 1.0
+  
+    //////////////
+  //CATALUNYA//
+  ////////////
+  
+  // #XarxaAnimalistaCat + #XarxaDesplaçatsCat
+  
+   var catalunya = function () {
+    
+    var params = {
+        q: '#XarxaAnimalistaCat OR #XarxaDesplaçatsCat', // Hashtags to search tweets within
+        result_type: 'mixed',
+        count: '100',
+        cursor:'-1',
+        stringify_ids: true
+    }
+    Twitter.get('search/tweets', params, function (err, data) {
+      var n = 0;
+      while (n < data.statuses.length){
+        
+        if (err) {console.log('Error during tweet search call');}
+     
+        else {
+          
+          console.log(params.q + " :: SEARCH RESULT #" + n + " --> "+data.statuses[n].id_str);
+          var retweetId = data.statuses[n].id_str;
+          Twitter.post('statuses/retweet/:id', { id: retweetId }, function (err, response) {
+            
+              if (err) { console.error('Problem when retweeting. Possibly already retweeted this tweet!!'); }
+              else { console.log(params.q + ' :: Retweeted!!'); }
+            
+          });
+        }       
+        n++;
+      }
+      console.log("TOTAL TWEETS --> "+n);
+    });
+  };
+  

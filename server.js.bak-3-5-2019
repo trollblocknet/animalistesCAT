@@ -43,6 +43,8 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
       var next_cursor = null; //RETRIEVE LATEST RT FROM FILESYSTEM 
       var i = 0;
     
+      console.log("getSinceId = "+ latest_since_id);
+    
       var params = {
           q: '(#XarxaAnimalistaCat OR #XarxaDesplaçatsCat)-(#XarxaCatCentral OR #XarxaCatcentralPerduts) -filter:retweets', // Hashtags to search tweets within
           result_type: 'mixed',
@@ -50,17 +52,15 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
           since_id: latest_since_id,
       }
       
-      console.log("\n***********************************************************\n");
-      console.log("SEARCH QUERY :: "+params.q+"\n\nRESULTS PAGE# "+((i/100)+1)+"\n");    
-      console.log("Latest RT Id: "+ latest_since_id);
+      console.log("SEARCH QUERY :: "+params.q+"\n\nRESULTS PAGE# "+((i/100)+1)+"\n");
       
       Twitter.get('search/tweets', params, function getList(err, data) {
 
           if (err) {console.error('Error during tweet search call :: ' + err);}
         
           else if ( data.statuses.length == 0 ) {
-
-            console.log("\n"+"no new tweets found.");
+            console.log("DATA -------> "+data.statuses.length);
+            console.log("no new tweets found.");
             return;
           }
 
@@ -133,6 +133,24 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
     return;
   }
   
+  function getSinceId() {
+
+    const fs = require('fs');
+    var since_id;
+    // First I want to read the file
+    fs.readFileSync('./.data/since_id.txt', 'utf8', function read(err, data) {
+        if (err) {
+            throw err;
+        }
+        console.log("SINCE_ID INSIDE FUNCTION -----------> "+data);
+        since_id = data;
+        return data;
+    });
+
+    //return since_id;
+    //return "1134203155053514754"; 
+  }
+  
   ///////////////////
   //FUNCTION CALLS// 
   /////////////////
@@ -143,3 +161,89 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
 var listener = app.listen(process.env.PORT, function () {
   console.log('Your bot is running on port ' + listener.address().port);
 });
+
+/*ARCHIVE*/
+
+/*  var catalunyaRecursiveBackwards = function () {
+      
+      var retweetId = null;
+      var retweetDate = null; 
+      var currentDate = null;
+      var currentScreenName = null;
+      var next_cursor = -1;  
+      var i = 0;
+      var params = {
+          q: '(#XarxaAnimalistaCat OR #XarxaDesplaçatsCat)-(#XarxaCatCentral OR #XarxaCatcentralPerduts)', // Hashtags to search tweets within
+          result_type: 'mixed',
+          count: '100',
+          max_id:'9999999999999999999',
+
+      }
+      
+      console.log("SEARCH QUERY :: "+params.q+"\n\nRESULTS PAGE# "+i/100+"\n");
+      
+      Twitter.get('search/tweets', params, function getList(err, data) {
+
+          if (err) {console.error('Error during tweet search call :: ' + err);}
+
+          else {
+            var n = 0;
+            while (n < data.statuses.length) {
+
+              retweetId = data.statuses[n].id_str;
+              retweetDate = data.statuses[n].created_at; 
+              currentDate = format(new Date());  
+              next_cursor = data.statuses[n].id_str;
+              currentScreenName = data.statuses[n].user.screen_name;
+
+              console.log("SEARCH RESULT #" + i + " :: "+retweetId+" :: "+currentScreenName);
+
+              // IF SCREEN_NAME IS IN THE EXCLUSION LIST ARRAY, THEN SKIP RT 
+
+              if (exclusion_list.includes(currentScreenName)==true) { 
+                console.error('ERROR: This tweet ('+retweetId+') belongs to an excluded user ('+currentScreenName+'). Skipping... '); 
+              }            
+              else {
+                Twitter.post('statuses/retweet/'+retweetId, function (err, response) {
+
+                    if (err) { console.error('ERROR: Problem when retweeting :: '+err); }
+                    else { console.log(params.q + ' Retweeted!! '+ response.retweeted_status.user); }
+
+                });
+              }
+
+            i++;
+            n++;
+
+          }
+        }
+        console.log("\nTOTAL TWEETS IN CURRENT PAGE --> "+n);
+
+        console.log("\nNEXT CURSOR --> "+next_cursor);
+        
+        // DO NOT RETWEET TWEETS OLDER THAN ONE DAY (EXIT PROGRAM WHEN FOUND)
+        
+        var retweetDateFormatted = format(new Date(parseTwitterDate(retweetDate)));
+        
+        console.log("\nCURRENT DATE --> "+currentDate);
+        console.log("NEXT CURSOR DATE --> "+retweetDateFormatted);
+
+        var localTime = moment(currentDate);
+        var otherTime = moment(retweetDateFormatted);
+
+        console.log("\nCurrent datetime is older than tweet date ->" + retweetDateFormatted + " by 1 days? = " + (localTime.diff(otherTime, 'days') >= 1));
+
+        if ((localTime.diff(otherTime, 'days') >= 1)==true) { next_cursor = -1; }
+
+        if(next_cursor != -1 || i < 5) 
+        {
+          params.max_id = next_cursor;
+          
+          Twitter.get('search/tweets',params, getList);
+        }
+        else {
+          console.log("5th PAGE OF RESULTS SET *OR* TWEET OLDER THAN ONE DAY REACHED.");
+        }
+      });
+      
+  };*/

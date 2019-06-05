@@ -3,7 +3,6 @@
 var exclusion_list = ["AnimalistesCAT","Eduard_Font","carquinyolista"];
       
 var path = require('path'),
-    fs = require('fs'),
     express = require('express'),
     app = express(),   
     Twit = require('twit'),
@@ -33,47 +32,27 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
   
   //CATALUNYA
   
-  var catalunyaForward = function () {
+    var catalunyaRecursive = function () {
       
       var retweetId = null;
       var retweetDate = null; 
       var currentDate = null;
       var currentScreenName = null;
-      var latest_since_id = fs.readFileSync('./.data/since_id.txt','utf8');
-      var next_cursor = null; //RETRIEVE LATEST RT FROM FILESYSTEM 
+      var next_cursor = -1;  
       var i = 0;
-    
       var params = {
-          q: '(#XarxaAnimalistaCat OR #XarxaDesplaçatsCat)-(#XarxaCatCentral OR #XarxaCatcentralPerduts) -filter:retweets', // Hashtags to search tweets within
+          q: '(#XarxaAnimalistaCat OR #XarxaDesplaçatsCat)-(#XarxaCatCentral OR #XarxaCatcentralPerduts)', // Hashtags to search tweets within
           result_type: 'mixed',
           count: '100',
-          since_id: latest_since_id,
+          max_id:'9999999999999999999',
+
       }
-      
-      console.log("\n***********************************************************\n");
-      console.log("SEARCH QUERY :: "+params.q+"\n\nRESULTS PAGE# "+((i/100)+1)+"\n");    
-      console.log("Latest RT Id: "+ latest_since_id);
-      
       Twitter.get('search/tweets', params, function getList(err, data) {
 
           if (err) {console.error('Error during tweet search call :: ' + err);}
-        
-          else if ( data.statuses.length == 0 ) {
-
-            console.log("\n"+"no new tweets found.");
-            return;
-          }
 
           else {
-            
             var n = 0;
-            
-            //SAVE NEWEST TWEET (SINCE_ID) IN FILESYSTEM, SO OLDER TWEETS WILL BE EXCLUDED FROM SEARCH THE NEXT TIME THE PROGRAM EXECUTES
-            
-            setSinceId(data.statuses[0].id_str);
-            
-            //ITERATE THE RESULTS SET IN ORDER TO RETWEET ALL THE TWEETS FOUND IN THE RESULTS SET
-            
             while (n < data.statuses.length) {
 
               retweetId = data.statuses[n].id_str;
@@ -82,7 +61,7 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
               next_cursor = data.statuses[n].id_str;
               currentScreenName = data.statuses[n].user.screen_name;
 
-              console.log("SEARCH RESULT #" + i + " :: " + retweetId + " :: "+currentScreenName + " :: " + retweetDate);
+              console.log(params.q + " :: SEARCH RESULT #" + i + " :: "+retweetId+" :: "+currentScreenName);
 
               // IF SCREEN_NAME IS IN THE EXCLUSION LIST ARRAY, THEN SKIP RT 
 
@@ -102,42 +81,50 @@ app.all("/" + process.env.BOT_ENDPOINT, function (req, res) {
             n++;
 
           }
-          //SAVE LATEST RT IN THE PAGE IN NEXT_CURSOR VAR INTO FILESYSTEM
         }
-        console.log("\nTOTAL TWEETS IN CURRENT PAGE --> "+n);
+        console.log("TOTAL TWEETS IN CURRENT PAGE --> "+n);
 
-        console.log("\nNEXT CURSOR --> "+next_cursor);
-        
-        params.max_id = next_cursor;
+        // DO NOT RETWEET TWEETS OLDER THAN ONE DAY (EXIT PROGRAM WHEN FOUND)
 
-        //Twitter.get('search/tweets', params, getList);
+        var retweetDateFormatted = format(new Date(parseTwitterDate(retweetDate)));
+        console.log("NEXT CURSOR DATE --> "+retweetDateFormatted);
+        console.log("CURRENT DATE --> "+currentDate);
+
+        var localTime = moment(currentDate);
+        var otherTime = moment(retweetDateFormatted);
+
+        console.log("Current datetime is older than tweet date ->" + retweetDateFormatted + " by 1 days? = " + (localTime.diff(otherTime, 'days') >= 1));
+
+        if ((localTime.diff(otherTime, 'days') >= 1)==true) { next_cursor = -1; }
+
+        console.log("page counter -> i = "+i);
+
+        if(next_cursor != -1 || i < 5) 
+        {
+          params.max_id = next_cursor;
+          console.log("NEXT CURSOR --> "+params.max_id);
+          Twitter.get('search/tweets',params, getList);
+        }
+        else {
+          console.log("5th PAGE OF RESULTS SET *OR* TWEET OLDER THAN ONE DAY REACHED.");
+        }
       });
       
   };
   
   //FUNCTIONS
 
-  function parseTwitterDate(aDate) {   
+  function parseTwitterDate(aDate)
+  {   
     return new Date(Date.parse(aDate.replace(/( \+)/, ' UTC$1')));
     //sample: Wed Mar 13 09:06:07 +0000 2013 
-  }
-  
-  function setSinceId(id_str) {
-    var fs = require('fs');
-    const path = './.data/since_id.txt';
-    let exists = fs.existsSync(path);
-    var output;
-    fs.writeFile(path, id_str, (err) => {
-      if (err) throw err;
-    });
-    return;
   }
   
   ///////////////////
   //FUNCTION CALLS// 
   /////////////////
   
-  catalunyaForward();
+  catalunyaRecursive();
 });
 
 var listener = app.listen(process.env.PORT, function () {
